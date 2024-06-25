@@ -1,6 +1,8 @@
-# WRITE YOUR CODE HERE
- def is_nested(your_dict):
-  
 
-# test code below
+def is_nested(dictionary):
+  for value in dictionary.values():
+    if isinstance(value, (list, tuple, dict)):
+      return True
+  return False
+
 
