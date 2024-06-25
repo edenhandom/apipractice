@@ -1,6 +1,8 @@
 import requests
 import json
 import re
+import pandas as pd
+import sqlalchemy as db
 
 
 # Replace 'YOUR_API_KEY' with your actual API key
@@ -12,12 +14,17 @@ response = requests.get(url)
 
 if response.status_code == 200:
   data = response.json()
-  video_titles = []
+  video_titles_dict = {}
   for item in data['items']:
     if item['id']['kind'] == 'youtube#video':
-      video_titles.append(item['snippet']['title'])
-  print("Video Titles:")
-  for title in video_titles:
-      print(title)
-else:
-    print(f'Error: {response.status_code}')
+      video_titles_dict[item['id']['videoId']] = item['snippet']['title']
+  df = pd.DataFrame.from_dict(video_titles_dict, orient='index', columns=['Video Title'])
+  print("DataFrame from Video Titles:")
+  print(df)
+
+  engine = db.create_engine('sqlite:///data_base_name.db')
+  df.to_sql('table_name', con=engine, if_exists='replace', index=False)
+  with engine.connect() as connection:
+   query_result = connection.execute(db.text("SELECT * FROM table_name;")).fetchall()
+   print(pd.DataFrame(query_result))
+
